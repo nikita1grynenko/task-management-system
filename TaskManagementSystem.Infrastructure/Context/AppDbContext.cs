@@ -13,10 +13,13 @@ public class AppDbContext : DbContext
     }
     
     public DbSet<User> Users { get; set; }
-    public DbSet<Task> Tasks { get; set; }
+    public DbSet<UserTask> Tasks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+        modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
+        
         base.OnModelCreating(modelBuilder);
     }
 }

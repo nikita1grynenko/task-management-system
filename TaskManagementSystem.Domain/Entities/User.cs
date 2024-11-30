@@ -2,9 +2,11 @@
 
 namespace TaskManagementSystem.Domain.Entities;
 
-public class User : BaseEntity
+public class User 
 {
-    
+    [Key]
+    public Guid Id { get; set; }
+
     [Required]
     [MaxLength(50)]
     public string Username { get; set; } = string.Empty;
@@ -16,5 +18,5 @@ public class User : BaseEntity
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
-    public ICollection<Task> Tasks { get; set; } = new List<Task>();
+    public ICollection<UserTask> Tasks { get; set; } = new List<UserTask>();
 }
