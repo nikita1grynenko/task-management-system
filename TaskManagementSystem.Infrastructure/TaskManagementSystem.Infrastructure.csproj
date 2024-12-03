@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TaskManagementSystem.Application\TaskManagementSystem.Application.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
         <PrivateAssets>all</PrivateAssets>
@@ -24,8 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Contracts\" />
-      <Folder Include="Repositories\" />
+      <ProjectReference Include="..\TaskManagementSystem.Application\TaskManagementSystem.Application.csproj" />
     </ItemGroup>
 
 </Project>
