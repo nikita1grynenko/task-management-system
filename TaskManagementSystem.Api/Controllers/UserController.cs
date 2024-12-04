@@ -4,6 +4,7 @@ using TaskManagementSystem.Application.DTOs;
 
 namespace TaskManagementSystem.Api.Controllers;
 
+[Route("user")]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -16,7 +17,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterUserDTO registerDto)
+    public async Task<IActionResult> Register(RegisterDTO registerDto)
     {
         _logger.LogInformation("Received registration request for email: {Email}", registerDto.Email);
 
@@ -33,7 +34,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginUserDTO loginDto)
+    public async Task<IActionResult> Login(LoginDTO loginDto)
     {
         _logger.LogInformation("Received login request for email: {Email}", loginDto.Email);
 

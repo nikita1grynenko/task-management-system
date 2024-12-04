@@ -22,7 +22,7 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    public async Task RegisterAsync(RegisterUserDTO registerDto)
+    public async Task RegisterAsync(RegisterDTO registerDto)
     {
         _logger.LogInformation("Attempting to register user with email: {Email}", registerDto.Email);
 
@@ -38,7 +38,7 @@ public class UserService : IUserService
         _logger.LogInformation("User registered successfully: {Username}", registerDto.Username);
     }
 
-    public async Task<string> AuthenticateAsync(LoginUserDTO loginDto)
+    public async Task<string> AuthenticateAsync(LoginDTO loginDto)
     {
         _logger.LogInformation("Attempting login for email: {Email}", loginDto.Email);
 

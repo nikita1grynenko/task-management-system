@@ -1,6 +1,6 @@
 ﻿namespace TaskManagementSystem.Application.DTOs;
 
-public class LoginUserDTO
+public class LoginDTO
 {
     public string Email { get; set; }
     public string Password { get; set; }
