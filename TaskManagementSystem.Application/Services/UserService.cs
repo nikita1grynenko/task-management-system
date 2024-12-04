@@ -2,6 +2,7 @@
 using TaskManagementSystem.Application.Contracts;
 using TaskManagementSystem.Application.DTOs;
 using TaskManagementSystem.Domain.Entities;
+using TaskManagementSystem.Infrastructure.Contracts;
 
 
 namespace TaskManagementSystem.Application.Services;
@@ -33,7 +34,7 @@ public class UserService : IUserService
             PasswordHash = hashedPassword
         };
 
-        await _userRepository.CreateAsync(user);
+        await _userRepository.AddAsync(user);
         _logger.LogInformation("User registered successfully: {Username}", registerDto.Username);
     }
 

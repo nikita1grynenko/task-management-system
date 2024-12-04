@@ -2,11 +2,7 @@
 
 namespace TaskManagementSystem.Infrastructure.Contracts;
 
-public interface IUserRepository
+public interface IUserRepository : IGenericRepository<User>
 {
-    Task<User> GetByIdAsync(Guid id);
-    Task<IEnumerable<User>> GetAllAsync();
-    Task AddAsync(User entity);
-    Task UpdateAsync(User entity);
-    Task DeleteAsync(Guid id);
+    Task<User?> GetByEmailAsync(string email);
 }

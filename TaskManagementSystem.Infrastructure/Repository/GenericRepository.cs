@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using TaskManagementSystem.Api.Contracts;
 using TaskManagementSystem.Infrastructure.Context;
+using TaskManagementSystem.Infrastructure.Contracts;
 
 namespace TaskManagementSystem.Infrastructure.Repository;
 

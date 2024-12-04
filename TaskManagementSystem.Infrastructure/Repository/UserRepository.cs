@@ -1,34 +1,27 @@
-﻿using TaskManagementSystem.Api.Contracts;
+﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Domain.Entities;
+using TaskManagementSystem.Infrastructure.Context;
 using TaskManagementSystem.Infrastructure.Contracts;
 
 namespace TaskManagementSystem.Infrastructure.Repository;
 
-public class UserRepository : IUserRepository
+public class UserRepository : GenericRepository<User>, IUserRepository
 {
-    private IGenericRepository<User> _genericRepositoryImplementation;
-    public Task<User> GetByIdAsync(Guid id)
+    private readonly AppDbContext _context;
+
+    public UserRepository(AppDbContext context) : base(context)
     {
-        return _genericRepositoryImplementation.GetByIdAsync(id);
+        _context = context;
     }
 
-    public Task<IEnumerable<User>> GetAllAsync()
+    public async Task<User?> GetByEmailAsync(string email)
     {
-        return _genericRepositoryImplementation.GetAllAsync();
-    }
+        if (string.IsNullOrEmpty(email))
+        {
+            throw new ArgumentException("Email cannot be null or empty.", nameof(email));
+        }
 
-    public Task AddAsync(User entity)
-    {
-        return _genericRepositoryImplementation.AddAsync(entity);
-    }
-
-    public Task UpdateAsync(User entity)
-    {
-        return _genericRepositoryImplementation.UpdateAsync(entity);
-    }
-
-    public Task DeleteAsync(Guid id)
-    {
-        return _genericRepositoryImplementation.DeleteAsync(id);
+        return await _context.Set<User>()
+            .FirstOrDefaultAsync(u => u.Email == email);
     }
 }

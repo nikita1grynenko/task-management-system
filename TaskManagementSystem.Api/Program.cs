@@ -2,9 +2,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TaskManagementSystem.Application.Services;
 using System.Text;
-using TaskManagementSystem.Api.Contracts;
+using TaskManagementSystem.Application.Contracts;
 using TaskManagementSystem.Application.Helpers;
-using TaskManagementSystem.Infrastructure.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
