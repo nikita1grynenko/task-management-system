@@ -1,6 +1,6 @@
 ﻿namespace TaskManagementSystem.Application.DTOs;
 
-public class RegisterUserDTO
+public class RegisterDTO
 {
     public string Username { get; set; }
     public string Email { get; set; }

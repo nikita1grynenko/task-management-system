@@ -4,6 +4,6 @@ namespace TaskManagementSystem.Application.Contracts;
 
 public interface IUserService
 {
-    Task RegisterAsync(RegisterUserDTO registerDto);
-    Task<string> AuthenticateAsync(LoginUserDTO loginDto);
+    Task RegisterAsync(RegisterDTO registerDto);
+    Task<string> AuthenticateAsync(LoginDTO loginDto);
 }

@@ -14,12 +14,11 @@ public class UserTask
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTime DueDate { get; set; }
-    
+
+    [Required] public UserTaskStatus Status { get; set; } = UserTaskStatus.Pending;
+        
     [Required]
-    public UserTaskStatus Status { get; set; }
-    
-    [Required]
-    public UserTaskPriority Priority { get; set; }
+    public UserTaskPriority Priority { get; set; } = UserTaskPriority.Medium;
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

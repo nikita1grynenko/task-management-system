@@ -28,10 +28,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Configuration\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\TaskManagementSystem.Application\TaskManagementSystem.Application.csproj" />
     </ItemGroup>
 
