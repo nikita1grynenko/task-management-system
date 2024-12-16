@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Domain.Entities;
+using TaskManagementSystem.Domain.Enums;
 using TaskManagementSystem.Infrastructure.Context;
 using TaskManagementSystem.Infrastructure.Contracts;
 
@@ -9,51 +10,36 @@ public class UserTaskRepository : IUserTaskRepository
 {
     private readonly AppDbContext _context;
 
-    public UserTaskRepository(AppDbContext context)
+    public async Task<UserTask?> GetByIdAsync(Guid taskId)
     {
-        _context = context;
+        return await _context.Tasks.FindAsync(taskId);
     }
 
-    public async Task<IEnumerable<UserTask>> GetTasksAsync(Guid userId, string status = null, DateTime? dueDate = null, string priority = null)
+    public IQueryable<UserTask> QueryTasks(Guid userId)
     {
-        var query = _context.Tasks.AsQueryable();
-
-        if (!string.IsNullOrEmpty(status))
-            query = query.Where(t => t.Status.ToString() == status);
-        
-        if (dueDate.HasValue)
-            query = query.Where(t => t.DueDate == dueDate.Value);
-        
-        if (!string.IsNullOrEmpty(priority))
-            query = query.Where(t => t.Priority.ToString() == priority);
-        
-        return await query.ToListAsync();
+        return _context.Tasks.Where(t => t.UserId == userId);
     }
 
-    public async Task<UserTask?> GetTaskByIdAsync(Guid id, Guid userId)
-    {
-        return await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
-    }
-
-    public async Task CreateTaskAsync(UserTask task)
+    public async Task AddAsync(UserTask task)
     {
         await _context.Tasks.AddAsync(task);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateTaskAsync(UserTask task)
+    public async Task UpdateAsync(UserTask task)
     {
         _context.Tasks.Update(task);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteTaskAsync(Guid id, Guid userId)
+    public async Task DeleteAsync(UserTask task)
     {
-        var task = await GetTaskByIdAsync(id, userId);
-        if (task != null)
-        {
-            _context.Tasks.Remove(task);
-            await _context.SaveChangesAsync();
-        }
+        _context.Tasks.Remove(task);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<int> CountAsync(IQueryable<UserTask> query)
+    {
+        return await query.CountAsync();
     }
 }

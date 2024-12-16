@@ -43,7 +43,7 @@ public class UserService : IUserService
         _logger.LogInformation("Attempting login for email: {Email}", loginDto.Email);
 
         var user = await _userRepository.GetByEmailAsync(loginDto.Email);
-        if (user == null || !_passwordHasher.VerifyHash(user.PasswordHash, loginDto.Password))
+        if (user == null || !_passwordHasher.VerifyHash(loginDto.Password, user.PasswordHash ))
         {
             _logger.LogWarning("Invalid login attempt for email: {Email}", loginDto.Email);
             throw new UnauthorizedAccessException("Invalid credentials");

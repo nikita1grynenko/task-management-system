@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
 using TaskManagementSystem.Application.Contracts;
+using TaskManagementSystem.Application.DTOs;
+using TaskManagementSystem.Application.Services;
 using TaskManagementSystem.Domain.Entities;
 
 namespace TaskManagementSystem.Api.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("tasks")]
 public class UserTasksController : ControllerBase
@@ -20,67 +20,48 @@ public class UserTasksController : ControllerBase
         _taskService = taskService;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateTask([FromBody] UserTask task)
-    {
-        if (task == null) return BadRequest();
-
-        task.CreatedAt = DateTime.UtcNow;
-        task.UpdatedAt = DateTime.UtcNow;
-        await _taskService.CreateTaskAsync(task);
-
-        return CreatedAtAction(nameof(GetTaskById), new { id = task.Id }, task);
-    }
-
     [HttpGet]
-    public async Task<IActionResult> GetTasks([FromQuery] string status = null, [FromQuery] DateTime? dueDate = null, [FromQuery] string priority = null)
+    public async Task<IActionResult> GetTasks([FromQuery] string? status, [FromQuery] DateTime? dueDate, [FromQuery] string? priority, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? sortBy = "duedate", [FromQuery] string sortDirection = "asc")
     {
-        var userId = GetUserIdFromToken();
-        var tasks = await _taskService.GetTasksAsync(userId, status, dueDate, priority);
-        return Ok(tasks);
+        var userId = GetUserId();
+        var (tasks, totalCount) = await _taskService.GetTasksAsync(userId, status, dueDate, priority, page, pageSize, sortBy, sortDirection);
+        return Ok(new { tasks, totalCount });
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTaskById(Guid id)
+    public async Task<IActionResult> GetTask(Guid id)
     {
-        var userId = GetUserIdFromToken();
-        var task = await _taskService.GetTaskByIdAsync(id, userId);
-        if (task == null) return NotFound();
+        var userId = GetUserId();
+        var task = await _taskService.GetTaskByIdAsync(userId, id);
         return Ok(task);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTask(Guid id, [FromBody] UserTask updatedTask)
+    [HttpPost]
+    public async Task<IActionResult> CreateTask([FromBody] TaskDto taskDto)
     {
-        if (updatedTask == null || id != updatedTask.Id) return BadRequest();
+        var userId = GetUserId();
+        var task = await _taskService.CreateTaskAsync(userId, taskDto);
+        return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+    }
 
-        var userId = GetUserIdFromToken();
-        var task = await _taskService.GetTaskByIdAsync(id, userId);
-        if (task == null) return NotFound();
-
-        task.Title = updatedTask.Title;
-        task.Description = updatedTask.Description;
-        task.DueDate = updatedTask.DueDate;
-        task.Status = updatedTask.Status;
-        task.Priority = updatedTask.Priority;
-        await _taskService.UpdateTaskAsync(task);
-
-        return NoContent();
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateTask(Guid id, [FromBody] TaskDto taskDto)
+    {
+        var userId = GetUserId();
+        var updatedTask = await _taskService.UpdateTaskAsync(userId, id, taskDto);
+        return Ok(updatedTask);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(Guid id)
     {
-        var userId = GetUserIdFromToken();
-        var task = await _taskService.GetTaskByIdAsync(id, userId);
-        if (task == null) return NotFound();
-
-        await _taskService.DeleteTaskAsync(id, userId);
+        var userId = GetUserId();
+        await _taskService.DeleteTaskAsync(userId, id);
         return NoContent();
     }
 
-    private Guid GetUserIdFromToken()
+    private Guid GetUserId()
     {
-        return Guid.Parse(User.FindFirst("UserId").Value);
+        return Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
     }
 }

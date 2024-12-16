@@ -1,48 +1,104 @@
-﻿using TaskManagementSystem.Application.Contracts;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskManagementSystem.Application.Contracts;
 using TaskManagementSystem.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using TaskManagementSystem.Application.DTOs;
+using TaskManagementSystem.Domain.Enums;
 using TaskManagementSystem.Infrastructure.Contracts;
 
 namespace TaskManagementSystem.Application.Services;
 
 public class UserTaskService : IUserTaskService
 {
-    private readonly IUserTaskRepository _repository;
-    private readonly ILogger<UserTaskService> _logger;
+    private readonly IUserTaskRepository _taskRepository;
 
-    public UserTaskService(IUserTaskRepository repository, ILogger<UserTaskService> logger)
+    public UserTaskService(IUserTaskRepository taskRepository)
     {
-        _repository = repository;
-        _logger = logger;
+        _taskRepository = taskRepository;
+    }
+    
+      public async Task<(IEnumerable<UserTask>, int)> GetTasksAsync(Guid userId, string? status, DateTime? dueDate, string? priority, int page, int pageSize, string? sortBy, string sortDirection)
+    {
+        var query = _taskRepository.QueryTasks(userId);
+
+        // Фільтрація
+        if (!string.IsNullOrEmpty(status))
+            query = query.Where(t => t.Status.ToString() == status);
+        if (dueDate.HasValue)
+            query = query.Where(t => t.DueDate.Date == dueDate.Value.Date);
+        if (!string.IsNullOrEmpty(priority))
+            query = query.Where(t => t.Priority.ToString() == priority);
+
+        // Сортування
+        query = sortBy?.ToLower() switch
+        {
+            "duedate" => sortDirection.ToLower() == "desc"
+                ? query.OrderByDescending(t => t.DueDate)
+                : query.OrderBy(t => t.DueDate),
+
+            "priority" => sortDirection.ToLower() == "desc"
+                ? query.OrderByDescending(t => t.Priority)
+                : query.OrderBy(t => t.Priority),
+
+            _ => query.OrderBy(t => t.CreatedAt)
+        };
+
+        // Пагінація
+        var totalCount = await _taskRepository.CountAsync(query);
+        var tasks = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (tasks, totalCount);
     }
 
-    public async Task<IEnumerable<UserTask>> GetTasksAsync(Guid userId, string status, DateTime? dueDate, string priority)
+    public async Task<UserTask> GetTaskByIdAsync(Guid userId, Guid taskId)
     {
-        _logger.LogInformation("Retrieving tasks for user {UserId}", userId);
-        return await _repository.GetTasksAsync(userId, status, dueDate, priority);
+        var task = await _taskRepository.GetByIdAsync(taskId);
+        if (task == null || task.UserId != userId)
+            throw new UnauthorizedAccessException("Task not found or access denied.");
+
+        return task;
     }
 
-    public async Task<UserTask?> GetTaskByIdAsync(Guid id, Guid userId)
+    public async Task<UserTask> CreateTaskAsync(Guid userId, TaskDto taskDto)
     {
-        _logger.LogInformation("Retrieving task {TaskId} for user {UserId}", id, userId);
-        return await _repository.GetTaskByIdAsync(id, userId);
+        var newTask = new UserTask
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Title = taskDto.Title,
+            Description = taskDto.Description,
+            DueDate = taskDto.DueDate ?? DateTime.UtcNow.AddDays(1),
+            Status = taskDto.Status ?? UserTaskStatus.Pending,
+            Priority = taskDto.Priority ?? UserTaskPriority.Medium,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _taskRepository.AddAsync(newTask);
+        return newTask;
     }
 
-    public async Task CreateTaskAsync(UserTask task)
+    public async Task<UserTask> UpdateTaskAsync(Guid userId, Guid taskId, TaskDto taskDto)
     {
-        _logger.LogInformation("Creating a new task for user {UserId}", task.UserId);
-        await _repository.CreateTaskAsync(task);
+        var task = await GetTaskByIdAsync(userId, taskId);
+
+        task.Title = taskDto.Title ?? task.Title;
+        task.Description = taskDto.Description ?? task.Description;
+        task.DueDate = taskDto.DueDate ?? task.DueDate;
+        task.Status = taskDto.Status ?? task.Status;
+        task.Priority = taskDto.Priority ?? task.Priority;
+        task.UpdatedAt = DateTime.UtcNow;
+
+        await _taskRepository.UpdateAsync(task);
+        return task;
     }
 
-    public async Task UpdateTaskAsync(UserTask task)
+    public async Task DeleteTaskAsync(Guid userId, Guid taskId)
     {
-        _logger.LogInformation("Updating task {TaskId} for user {UserId}", task.Id, task.UserId);
-        await _repository.UpdateTaskAsync(task);
-    }
-
-    public async Task DeleteTaskAsync(Guid id, Guid userId)
-    {
-        _logger.LogInformation("Deleting task {TaskId} for user {UserId}", id, userId);
-        await _repository.DeleteTaskAsync(id, userId);
+        var task = await GetTaskByIdAsync(userId, taskId);
+        await _taskRepository.DeleteAsync(task);
     }
 }
