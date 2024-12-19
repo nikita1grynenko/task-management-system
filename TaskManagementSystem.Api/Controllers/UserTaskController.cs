@@ -1,11 +1,7 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
+﻿using Microsoft.AspNetCore.Mvc;
 using TaskManagementSystem.Application.Contracts;
 using TaskManagementSystem.Application.DTOs;
-using TaskManagementSystem.Application.Services;
-using TaskManagementSystem.Domain.Entities;
+using TaskManagementSystem.Domain.Enums;
 
 namespace TaskManagementSystem.Api.Controllers;
 
@@ -20,26 +16,17 @@ public class UserTasksController : ControllerBase
         _taskService = taskService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetTasks([FromQuery] string? status, [FromQuery] DateTime? dueDate, [FromQuery] string? priority, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? sortBy = "duedate", [FromQuery] string sortDirection = "asc")
-    {
-        var userId = GetUserId();
-        var (tasks, totalCount) = await _taskService.GetTasksAsync(userId, status, dueDate, priority, page, pageSize, sortBy, sortDirection);
-        return Ok(new { tasks, totalCount });
-    }
-
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTask(Guid id)
+    public async Task<IActionResult> GetTask(Guid id, UserTaskStatus? status, DateTime? dueDate,
+        UserTaskPriority? priority)
     {
-        var userId = GetUserId();
-        var task = await _taskService.GetTaskByIdAsync(userId, id);
-        return Ok(task);
+        var tasks = await _taskService.GetTasksByFiltersAsync(id, status, dueDate, priority);
+        return Ok(tasks);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateTask([FromBody] TaskDto taskDto)
+    public async Task<IActionResult> CreateTask(Guid userId, [FromBody] TaskDto taskDto)
     {
-        var userId = GetUserId();
         var task = await _taskService.CreateTaskAsync(userId, taskDto);
         return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
     }
@@ -47,21 +34,15 @@ public class UserTasksController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTask(Guid id, [FromBody] TaskDto taskDto)
     {
-        var userId = GetUserId();
-        var updatedTask = await _taskService.UpdateTaskAsync(userId, id, taskDto);
+        var updatedTask = await _taskService.UpdateTaskAsync(id, taskDto);
         return Ok(updatedTask);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(Guid id)
     {
-        var userId = GetUserId();
-        await _taskService.DeleteTaskAsync(userId, id);
+        await _taskService.DeleteTaskAsync(id);
         return NoContent();
     }
-
-    private Guid GetUserId()
-    {
-        return Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-    }
+    
 }

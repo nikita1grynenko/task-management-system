@@ -1,13 +1,10 @@
 ﻿using TaskManagementSystem.Domain.Entities;
+using TaskManagementSystem.Domain.Enums;
 
 namespace TaskManagementSystem.Infrastructure.Contracts;
 
-public interface IUserTaskRepository
+public interface IUserTaskRepository : IGenericRepository<UserTask>
 {
-    Task<UserTask?> GetByIdAsync(Guid taskId);
-    IQueryable<UserTask> QueryTasks(Guid userId);
-    Task AddAsync(UserTask task);
-    Task UpdateAsync(UserTask task);
-    Task DeleteAsync(UserTask task);
-    Task<int> CountAsync(IQueryable<UserTask> query);
+    Task<List<UserTask>> GetTasksByFiltersAsync(Guid userId, UserTaskStatus? status, DateTime? dueDate,
+        UserTaskPriority? priority);
 }

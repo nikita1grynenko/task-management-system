@@ -6,40 +6,30 @@ using TaskManagementSystem.Infrastructure.Contracts;
 
 namespace TaskManagementSystem.Infrastructure.Repository;
 
-public class UserTaskRepository : IUserTaskRepository
+public class UserTaskRepository : GenericRepository<UserTask>, IUserTaskRepository
 {
     private readonly AppDbContext _context;
 
-    public async Task<UserTask?> GetByIdAsync(Guid taskId)
+    public UserTaskRepository(AppDbContext context) : base(context)
     {
-        return await _context.Tasks.FindAsync(taskId);
+        _context = context;
     }
-
-    public IQueryable<UserTask> QueryTasks(Guid userId)
+    
+    public async Task<List<UserTask>> GetTasksByFiltersAsync(Guid userId, UserTaskStatus? status, DateTime? dueDate, UserTaskPriority? priority)
     {
-        return _context.Tasks.Where(t => t.UserId == userId);
-    }
+        var query = _context.Tasks
+            .Where(t => t.UserId == userId)
+            .AsQueryable();
 
-    public async Task AddAsync(UserTask task)
-    {
-        await _context.Tasks.AddAsync(task);
-        await _context.SaveChangesAsync();
-    }
+        if (status.HasValue)
+            query = query.Where(t => t.Status == status.Value);
 
-    public async Task UpdateAsync(UserTask task)
-    {
-        _context.Tasks.Update(task);
-        await _context.SaveChangesAsync();
-    }
+        if (dueDate.HasValue)
+            query = query.Where(t => t.DueDate.Date == dueDate.Value.Date);
 
-    public async Task DeleteAsync(UserTask task)
-    {
-        _context.Tasks.Remove(task);
-        await _context.SaveChangesAsync();
-    }
+        if (priority.HasValue)
+            query = query.Where(t => t.Priority == priority.Value);
 
-    public async Task<int> CountAsync(IQueryable<UserTask> query)
-    {
-        return await query.CountAsync();
+        return await query.ToListAsync();
     }
 }

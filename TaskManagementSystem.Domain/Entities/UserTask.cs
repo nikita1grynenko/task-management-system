@@ -15,7 +15,8 @@ public class UserTask
     public string Description { get; set; } = string.Empty;
     public DateTime DueDate { get; set; }
 
-    [Required] public UserTaskStatus Status { get; set; } = UserTaskStatus.Pending;
+    [Required] 
+    public UserTaskStatus Status { get; set; } = UserTaskStatus.Pending;
         
     [Required]
     public UserTaskPriority Priority { get; set; } = UserTaskPriority.Medium;
