@@ -27,26 +27,29 @@ public class UserTaskService : IUserTaskService
         return task;
     }
 
-    public async Task<List<UserTask>> GetTasksByFiltersAsync(Guid userId, UserTaskStatus? status, DateTime? dueDate,
-        UserTaskPriority? priority)
+    public async Task<(List<UserTask>, int TotalCount)> GetTasksByFiltersAsync(Guid userId, UserTaskStatus? status, DateTime? dueDate,
+        UserTaskPriority? priority,string sortBy,
+        string sortOrder,
+        int page,
+        int pageSize)
     {
-        var tasks = await _taskRepository.GetTasksByFiltersAsync(userId, status, dueDate, priority);
-        if (tasks == null)
+        var tasks = await _taskRepository.GetTasksByFiltersAsync(userId, status, dueDate, priority, sortBy, sortOrder, page, pageSize);
+        if (tasks.tasks == null)
             throw new UnauthorizedAccessException("Tasks not found or access denied.");
         return tasks;
     }
 
-    public async Task<UserTask> CreateTaskAsync(Guid userId, TaskDto taskDto)
+    public async Task<UserTask> CreateTaskAsync(Guid userId, СreateTaskDto сreateTaskDto)
     {
         var newTask = new UserTask
         {
             Id = Guid.NewGuid(),
             UserId = userId,
-            Title = taskDto.Title,
-            Description = taskDto.Description,
-            DueDate = taskDto.DueDate,
-            Status = taskDto.Status,
-            Priority = taskDto.Priority,
+            Title = сreateTaskDto.Title,
+            Description = сreateTaskDto.Description,
+            DueDate = сreateTaskDto.DueDate,
+            Status = сreateTaskDto.Status,
+            Priority = сreateTaskDto.Priority,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -55,15 +58,15 @@ public class UserTaskService : IUserTaskService
         return newTask;
     }
 
-    public async Task<UserTask> UpdateTaskAsync(Guid taskId, TaskDto taskDto)
+    public async Task<UserTask> UpdateTaskAsync(Guid taskId, UpdateTaskDto updateTaskDto)
     {
         var task = await GetTaskByIdAsync(taskId);
 
-        task.Title = taskDto.Title;
-        task.Description = taskDto.Description;
-        task.DueDate = taskDto.DueDate;
-        task.Status = taskDto.Status;
-        task.Priority = taskDto.Priority;
+        task.Title = updateTaskDto.Title;
+        task.Description = updateTaskDto.Description;
+        task.DueDate = updateTaskDto.DueDate;
+        task.Status = updateTaskDto.Status;
+        task.Priority = updateTaskDto.Priority;
         task.UpdatedAt = DateTime.UtcNow;
 
         await _taskRepository.UpdateAsync(task);

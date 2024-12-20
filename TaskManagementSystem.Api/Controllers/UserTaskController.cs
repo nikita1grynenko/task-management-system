@@ -18,23 +18,23 @@ public class UserTasksController : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTask(Guid id, UserTaskStatus? status, DateTime? dueDate,
-        UserTaskPriority? priority)
+        UserTaskPriority? priority,string sortBy = "createdat", string sortOrder = "asc", int page = 1, int pageSize = 20)
     {
-        var tasks = await _taskService.GetTasksByFiltersAsync(id, status, dueDate, priority);
+        var tasks = await _taskService.GetTasksByFiltersAsync(id, status, dueDate, priority, sortBy, sortOrder,page, pageSize);
         return Ok(tasks);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateTask(Guid userId, [FromBody] TaskDto taskDto)
+    public async Task<IActionResult> CreateTask(Guid userId, [FromBody] СreateTaskDto сreateTaskDto)
     {
-        var task = await _taskService.CreateTaskAsync(userId, taskDto);
+        var task = await _taskService.CreateTaskAsync(userId, сreateTaskDto);
         return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTask(Guid id, [FromBody] TaskDto taskDto)
+    public async Task<IActionResult> UpdateTask(Guid id, [FromBody] UpdateTaskDto updateTaskDto)
     {
-        var updatedTask = await _taskService.UpdateTaskAsync(id, taskDto);
+        var updatedTask = await _taskService.UpdateTaskAsync(id, updateTaskDto);
         return Ok(updatedTask);
     }
 

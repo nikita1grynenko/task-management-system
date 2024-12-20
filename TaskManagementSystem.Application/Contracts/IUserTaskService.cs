@@ -7,9 +7,14 @@ namespace TaskManagementSystem.Application.Contracts;
 public interface IUserTaskService
 {
     Task<UserTask> GetTaskByIdAsync(Guid taskId);
-    Task<List<UserTask>> GetTasksByFiltersAsync(Guid userId, UserTaskStatus? status, DateTime? dueDate,
-        UserTaskPriority? priority);
-    Task<UserTask> CreateTaskAsync(Guid userId, TaskDto taskDto);
-    Task<UserTask> UpdateTaskAsync(Guid taskId, TaskDto taskDto);
+
+    Task<(List<UserTask>, int TotalCount)> GetTasksByFiltersAsync(Guid userId, UserTaskStatus? status,
+        DateTime? dueDate,
+        UserTaskPriority? priority, string sortBy,
+        string sortOrder,
+        int page,
+        int pageSize);
+    Task<UserTask> CreateTaskAsync(Guid userId, СreateTaskDto сreateTaskDto);
+    Task<UserTask> UpdateTaskAsync(Guid taskId, UpdateTaskDto updateTaskDto);
     Task DeleteTaskAsync(Guid taskId);
 }
