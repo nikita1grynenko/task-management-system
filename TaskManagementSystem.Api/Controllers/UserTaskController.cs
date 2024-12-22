@@ -20,8 +20,18 @@ public class UserTasksController : ControllerBase
     public async Task<IActionResult> GetTask(Guid id, UserTaskStatus? status, DateTime? dueDate,
         UserTaskPriority? priority,string sortBy = "createdat", string sortOrder = "asc", int page = 1, int pageSize = 20)
     {
-        var tasks = await _taskService.GetTasksByFiltersAsync(id, status, dueDate, priority, sortBy, sortOrder,page, pageSize);
-        return Ok(tasks);
+        var (tasks, totalCount) = await _taskService.GetTasksByFiltersAsync(id, status, dueDate, priority, sortBy, sortOrder,page, pageSize);
+        
+        var response = new
+        {
+            Data = tasks,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+        };
+        
+        return Ok(response);
     }
 
     [HttpPost]
